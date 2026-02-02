@@ -3,6 +3,7 @@ import useApi from "./useApi";
 import { WalletResponse } from "../types/Wallet";
 import { useCallback } from "react";
 import { getQueryOptions } from "../config/queryConfig";
+import { CurrencyEnum } from "../enums/currencyEnum";
 
 export default function useWallet() {
     const { api } = useApi();

@@ -37,7 +37,7 @@ export default function LoginPageComponent() {
             <Container className="justify-center items-center max-w-[500px] w-full">
                 <form onSubmit={handleLogin} className="flex flex-col w-full gap-4">
                     <Input label="이메일 주소를 입력해 주세요." id="email" autoComplete="off" placeholder="email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-                    <Button type="submit" className="w-full">로그인</Button>
+                    <Button type="submit" className="w-full" disabled={email.length === 0}>로그인</Button>
                 </form>
             </Container>
         </div>

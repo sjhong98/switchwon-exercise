@@ -50,6 +50,7 @@ export default function useExchange() {
         data: exchangeHistoryData,
         isLoading: exchangeHistoryLoading,
         error: exchangeHistoryError,
+        refetch: refetchExchangeHistory,
     } = getExchangeHistoryQuery;
 
     return {
@@ -58,5 +59,6 @@ export default function useExchange() {
         exchangeHistoryData,
         exchangeHistoryLoading,
         exchangeHistoryError,
+        refetchExchangeHistory,
     }
 }

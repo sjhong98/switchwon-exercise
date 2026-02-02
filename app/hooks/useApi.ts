@@ -38,9 +38,7 @@ export default function useApi() {
             const result = await res.json();
 
             if(!res.ok) {
-                if (result.status === 401) {
-                    router.push('/login');
-                }
+                if (res.status === 401) router.push('/login')
                 
                 const err = new Error(result.message) as ApiError;
                 err.status = res.status;

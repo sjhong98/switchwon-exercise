@@ -21,10 +21,7 @@ import P from "@/app/components/common/P";
 export default function ExchangePanel() {
     const { getQuote, order } = useExchange();
     const { exchangeRateData, refetchExchangeRate } = useExchangeRate();
-    const { refetchWallet } = useWallet()
-
-    const baseCurrency = 'KRW'
-    const enabledExchangeCurrencyList = useMemo(() => Object.values(CurrencyEnum).filter((currency) => baseCurrency !== currency), [])
+    const { walletData, refetchWallet } = useWallet()
 
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -36,7 +33,13 @@ export default function ExchangePanel() {
         appliedRate: 0,
     });
     const [isOrderStart, setIsOrderStart] = useState<boolean>(false);
+    const [inputAmountError, setInputAmountError] = useState<string | undefined>(undefined);
+    const [krwAmountError, setKrwAmountError] = useState<string | undefined>(undefined);
 
+    const baseCurrency = 'KRW'
+    const enabledExchangeCurrencyList = useMemo(() => Object.values(CurrencyEnum).filter((currency) => baseCurrency !== currency), [])
+    const selectedCurrencyWallet = useMemo(() => walletData?.wallets.find((wallet) => wallet.currency === selectedCurrency), [selectedCurrency, walletData])
+    const krwWallet = useMemo(() => walletData?.wallets.find((wallet) => wallet.currency === 'KRW'), [walletData])
     const selectedCurrencyExchangeRate: ExchangeRate | undefined = useMemo(() => exchangeRateData?.find((rate) => rate.currency === selectedCurrency), [selectedCurrency, exchangeRateData]);
 
     const SelectedCurrencyComponent = useMemo(() => {
@@ -112,7 +115,9 @@ export default function ExchangePanel() {
     }, [exchangeRateData])
 
     // 주문 요청
-    const handleOrder = useCallback(async () => {
+    const handleOrder = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
         setIsOrderStart(true)
 
         const exchangeRateId = selectedCurrencyExchangeRate?.exchangeRateId;
@@ -121,21 +126,24 @@ export default function ExchangePanel() {
             return
         }
 
-        await order({
-            exchangeRateId,
-            fromCurrency: activeTab === 'buy' ? baseCurrency : selectedCurrency,
-            toCurrency: activeTab === 'buy' ? selectedCurrency : baseCurrency,
-            forexAmount: inputAmount,
-        })
-
-        setIsOrderStart(false)
-        setInputAmount(0)
-        setQuote({
-            ...quote,
-            krwAmount: 0,
-        });
-        refetchWallet()
-        successToast('환전이 완료되었습니다.');
+        try {
+            await order({
+                exchangeRateId,
+                fromCurrency: activeTab === 'buy' ? baseCurrency : selectedCurrency,
+                toCurrency: activeTab === 'buy' ? selectedCurrency : baseCurrency,
+                forexAmount: inputAmount,
+            })
+            refetchWallet()
+            successToast('환전이 완료되었습니다.');
+            setInputAmount(0)
+            setQuote({
+                ...quote,
+                krwAmount: 0,
+            });
+        } catch (error) {
+        } finally {
+            setIsOrderStart(false)
+        }
     }, [order, selectedCurrency, inputAmount, selectedCurrency, exchangeRateData, refetchWallet])
 
     // 탭, 통화 변경 시 초기화
@@ -146,6 +154,17 @@ export default function ExchangePanel() {
             appliedRate: selectedCurrencyExchangeRate?.rate ?? 0,
         });
     }, [activeTab, selectedCurrency])
+
+    // 입력 금액 오류 체크
+    useEffect(() => {
+        if (!selectedCurrencyWallet || !krwWallet?.balance) return
+
+        if (activeTab === 'buy') {
+            quote.krwAmount > krwWallet?.balance ? setKrwAmountError('보유 자산 초과') : setKrwAmountError(undefined);
+        } else {
+            inputAmount > selectedCurrencyWallet.balance ? setInputAmountError('보유 자산 초과') : setInputAmountError(undefined);
+        }
+    }, [quote, inputAmount])
 
     return (
         <Container className="flex flex-col gap-4 h-full">
@@ -162,22 +181,28 @@ export default function ExchangePanel() {
                 activeTab={activeTab}
                 onTabChange={(tab) => { setActiveTab(tab as 'buy' | 'sell') }}
             />
-            <SuffixInput
-                label={activeTab === 'buy' ? "매수 금액" : "매도 금액"}
-                suffix={activeTab === 'buy' ? `${CurrencySuffix[selectedCurrency]} 사기` : `${CurrencySuffix[selectedCurrency]} 팔기`}
-                value={inputAmount.toLocaleString()}
-                onChange={(e) => setInputAmount(parseNumber(e, inputAmount))}
-                className='font-semibold'
-            />
+            <form onSubmit={handleOrder}>
+                <SuffixInput
+                    id="input-amount"
+                    label={activeTab === 'buy' ? "매수 금액" : "매도 금액"}
+                    suffix={activeTab === 'buy' ? `${CurrencySuffix[selectedCurrency]} 사기` : `${CurrencySuffix[selectedCurrency]} 팔기`}
+                    value={inputAmount.toLocaleString()}
+                    onChange={(e) => setInputAmount(parseNumber(e, inputAmount))}
+                    className='font-semibold'
+                    errorMessage={inputAmountError}
+                />
+            </form>
             <div className='flex w-full justify-center'>
                 <Image src="/assets/nextArrowCircle.svg" alt="next" width={24} height={24} />
             </div>
             <SuffixInput
+                id="krw-amount"
                 label="필요 원화"
                 suffix={activeTab === 'buy' ? "원 필요해요" : "원 받을 수 있어요"}
                 value={formatNumber(quote?.krwAmount, 0, 0)}
                 className="!bg-gray-100 !border-gray-300 font-semibold"
                 disabled
+                errorMessage={krwAmountError}
             />
             <div className="flex justify-between items-center mt-auto w-full border-t border-gray-300 pt-4 overflow-hidden">
                 <P>적용 환율</P>
@@ -187,9 +212,11 @@ export default function ExchangePanel() {
                     {`1 ${selectedCurrency} = ${formatNumber(normalizeCurrent(Boolean(quote?.appliedRate) ? quote?.appliedRate : selectedCurrencyExchangeRate?.rate, selectedCurrency))} ${baseCurrency}`}
                 </P>
             </div>
-            <Button onClick={handleOrder} className="w-full" disabled={isOrderStart} textClassName="text-md font-semibold text-white">
-                환전하기
-            </Button>
+            <form onSubmit={handleOrder}>
+                <Button type="submit" className="w-full" disabled={isOrderStart || inputAmount === 0 || Boolean(inputAmountError) || Boolean(krwAmountError)} textClassName="text-md font-semibold text-white">
+                    환전하기
+                </Button>
+            </form>
         </Container>
     )
 }   
