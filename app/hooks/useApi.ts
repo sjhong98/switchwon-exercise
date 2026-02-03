@@ -1,11 +1,14 @@
-import { useCookies } from "react-cookie";
-import { errorToast } from "../lib/toast";
+'use client'
+
 import { useRouter } from "next/navigation";
+import { useCookies } from "react-cookie";
+
+import { errorToast } from "../lib/toast";
 
 interface UseApiProps {
     url: string;
     method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-    body?: any;
+    body?: object;
 }
 
 export interface ApiResponse<T> {
@@ -40,7 +43,7 @@ export default function useApi() {
             if(!res.ok) {
                 if (res.status === 401) router.push('/login')
                 
-                const err = new Error(result.message) as ApiError;
+                const err = new Error(result?.message ?? 'API ERROR') as ApiError;
                 err.status = res.status;
                 err.data = result.data;
                 throw err;
@@ -52,7 +55,8 @@ export default function useApi() {
             }
         } catch (error) {
             const err = error as ApiError;
-            errorToast(err.message);
+            console.error(err)
+            errorToast('요청 중 오류가 발생했습니다.');
             throw err;
         }   
     }

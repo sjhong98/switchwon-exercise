@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
+
+import { getQueryOptions } from "../config/queryConfig";
 import { ExchangeRateResponse } from "../types/ExchangeRate";
 import useApi from "./useApi";
-import { getQueryOptions } from "../config/queryConfig";
 
 export default function useExchangeRate() {
     const { api } = useApi();

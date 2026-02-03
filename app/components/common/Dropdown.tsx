@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface DropdownProps {
     triggerComponent: ReactNode
@@ -50,14 +50,14 @@ export default function Dropdown(props: DropdownProps) {
 
     return (
         <div ref={containerRef} className='relative select-none'>
-            <div className="flex gap-2 items-center cursor-pointer" onClick={handleToggle}>
+            <div className="flex items-center gap-2 cursor-pointer" onClick={handleToggle}>
                 {triggerComponent}
                 <div className={`${isOpen ? `rotate-180` : ''} duration-300`}>
                     {ArrowIcon}
                 </div>
             </div>
             <div
-                className="flex flex-col absolute py-2 rounded-[16px] border border-gray-100 bg-white overflow-hidden duration-200 z-[9999]"
+                className="flex flex-col absolute py-2 border border-gray-100 rounded-[16px] bg-white overflow-hidden duration-200 z-[9999]"
                 style={{
                     height: isOpen ? `${itemList.length * (itemRef.current?.clientHeight ?? 40) + 16}px` : '0px',
                     opacity: isOpen ? 1 : 0
@@ -65,7 +65,7 @@ export default function Dropdown(props: DropdownProps) {
             >
                 {
                     itemList.map((item, index) => (
-                        <div key={index} ref={itemRef} className="flex items-center gap-2 py-2 px-4 hover:bg-gray-50 duration-200 cursor-pointer" onClick={() => handleSelect(index)}>
+                        <div key={index} ref={itemRef} className="flex items-center gap-2 px-4 py-2 cursor-pointer duration-200 hover:bg-gray-50" onClick={() => handleSelect(index)}>
                             {item}
                         </div>
                     ))

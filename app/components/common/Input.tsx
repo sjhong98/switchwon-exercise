@@ -33,11 +33,11 @@ export default function Input(props: InputProps) {
     }, [errorMessage])
 
     return (
-        <div id='input' className='flex flex-col w-full gap-2 h-auto relative'>
+        <div id='input' className='flex flex-col w-full h-auto gap-2 relative'>
             {label && (
-                <label htmlFor={rest.id} className='block text-sm font-normal text-gray-500 text-left min-w-0 overflow-hidden text-ellipsis whitespace-nowrap'>{label}</label>
+                <label htmlFor={rest.id} className='min-w-0 block text-sm text-left font-normal text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap'>{label}</label>
             )}
-            <input type="text" className={`w-full p-2 rounded-[12.5px] border border-gray-400 bg-white outline-none px-6 py-4 z-[2] ${errorMessage && '!border-red-500'} ${className}`} autoComplete="off" {...rest} />
+            <input type="text" className={`w-full p-2 px-6 py-4 rounded-[12.5px] border border-gray-400 bg-white outline-none z-[2] ${errorMessage && '!border-red-500'} ${className}`} autoComplete="off" {...rest} />
             <p id={inputId} className={`absolute top-[calc(100%+4px)] right-4 text-sm font-normal text-red-500 text-right z-[1]`}>{_errorMessage}</p>
         </div>
     )

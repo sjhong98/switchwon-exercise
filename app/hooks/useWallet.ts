@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import useApi from "./useApi";
-import { WalletResponse } from "../types/Wallet";
 import { useCallback } from "react";
-import { getQueryOptions } from "../config/queryConfig";
+import { useQuery } from "@tanstack/react-query";
+
 import { CurrencyEnum } from "../enums/currencyEnum";
+import { getQueryOptions } from "../config/queryConfig";
+import { WalletResponse } from "../types/Wallet";
+import useApi from "./useApi";
 
 export default function useWallet() {
     const { api } = useApi();

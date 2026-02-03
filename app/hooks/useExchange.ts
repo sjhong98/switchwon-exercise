@@ -1,8 +1,9 @@
 import { useCallback } from "react";
-import { GetOrderProps, GetQuoteProps, OrderResponse, QuoteResponse, ExchangeHistoryResponse } from "../types/Exchange";
-import useApi from "./useApi";
 import { useQuery } from "@tanstack/react-query";
+
 import { getQueryOptions } from "../config/queryConfig";
+import { ExchangeHistoryResponse, GetOrderProps, GetQuoteProps, OrderResponse, QuoteResponse } from "../types/Exchange";
+import useApi from "./useApi";
 
 export default function useExchange() {
     const { api } = useApi();

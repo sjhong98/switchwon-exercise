@@ -1,6 +1,10 @@
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+
 import Button from "@/app/components/common/Button";
-import Container from "@/app/components/common/container";
+import Container from "@/app/components/common/Container";
 import Dropdown from "@/app/components/common/Dropdown";
+import P from "@/app/components/common/P";
 import SuffixInput from "@/app/components/common/SuffixInput";
 import Tab from "@/app/components/common/Tab";
 import { CurrencyEnum, CurrencyFlag, CurrencyName, CurrencySuffix } from "@/app/enums/currencyEnum";
@@ -8,15 +12,12 @@ import useExchange from "@/app/hooks/useExchange";
 import useExchangeRate from "@/app/hooks/useExchangeRate";
 import useWallet from "@/app/hooks/useWallet";
 import formatNumber from "@/app/lib/formatNumber";
-import normalizeCurrent from "@/app/lib/normalizeCurrent";
+import normalizeCurrency from "@/app/lib/normalizeCurrency";
 import parseNumber from "@/app/lib/parseNumber";
 import { errorToast, successToast } from "@/app/lib/toast";
 import { Currency } from "@/app/types/Currency";
 import { Quote } from "@/app/types/Exchange";
 import { ExchangeRate } from "@/app/types/ExchangeRate";
-import Image from "next/image";
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import P from "@/app/components/common/P";
 
 export default function ExchangePanel() {
     const { getQuote, order } = useExchange();
@@ -56,7 +57,7 @@ export default function ExchangePanel() {
 
     const DropdownItemList = useMemo(() => {
         return enabledExchangeCurrencyList.map((currency) => (
-            <div key={currency} className="flex items-center gap-2 cursor-pointer text-[12px] font-nornal">
+            <div key={currency} className="flex items-center gap-2 cursor-pointer text-[12px] font-normal">
                 <Image src={CurrencyFlag[currency]} alt={CurrencyName[currency]} width={16} height={16} />
                 <div className="flex gap-1">
                     <p>{CurrencyName[currency]}</p>
@@ -80,13 +81,15 @@ export default function ExchangePanel() {
         if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
 
         debounceTimerRef.current = setTimeout(async () => {
-            const quote = await getQuote({
-                fromCurrency: activeTab === 'buy' ? baseCurrency : selectedCurrency,
-                toCurrency: activeTab === 'buy' ? selectedCurrency : baseCurrency,
-                forexAmount: inputAmount,
-            })
+            try {
+                const quote = await getQuote({
+                    fromCurrency: activeTab === 'buy' ? baseCurrency : selectedCurrency,
+                    toCurrency: activeTab === 'buy' ? selectedCurrency : baseCurrency,
+                    forexAmount: inputAmount,
+                })
 
-            if (quote) setQuote(quote);
+                if (quote) setQuote(quote);
+            } catch (err) { }
         }, 200);
     }, [inputAmount])
 
@@ -110,7 +113,7 @@ export default function ExchangePanel() {
                 forexAmount: inputAmount,
             }).then((quote) => {
                 if (quote) setQuote(quote);
-            })
+            }).catch((err) => { })
         }
     }, [exchangeRateData])
 
@@ -134,7 +137,7 @@ export default function ExchangePanel() {
                 forexAmount: inputAmount,
             })
             refetchWallet()
-            successToast('환전이 완료되었습니다.');
+            successToast('환전이 완료되었습니다.', false);
             setInputAmount(0)
             setQuote({
                 ...quote,
@@ -144,7 +147,7 @@ export default function ExchangePanel() {
         } finally {
             setIsOrderStart(false)
         }
-    }, [order, selectedCurrency, inputAmount, selectedCurrency, exchangeRateData, refetchWallet])
+    }, [order, inputAmount, selectedCurrency, exchangeRateData, refetchWallet, setQuote])
 
     // 탭, 통화 변경 시 초기화
     useEffect(() => {
@@ -167,21 +170,21 @@ export default function ExchangePanel() {
     }, [quote, inputAmount])
 
     return (
-        <Container className="flex flex-col gap-4 h-full">
-            <Dropdown
-                triggerComponent={SelectedCurrencyComponent}
-                itemList={DropdownItemList as ReactNode[]}
-                onSelect={(index) => setSelectedCurrency(enabledExchangeCurrencyList[index])}
-            />
-            <Tab
-                tabs={[
-                    { label: '살래요', value: 'buy', color: 'var(--color-main-red)' },
-                    { label: '팔래요', value: 'sell', color: 'var(--color-main-blue)' },
-                ]}
-                activeTab={activeTab}
-                onTabChange={(tab) => { setActiveTab(tab as 'buy' | 'sell') }}
-            />
-            <form onSubmit={handleOrder}>
+        <Container className="h-full">
+            <form onSubmit={handleOrder} className="flex flex-col h-full gap-4">
+                <Dropdown
+                    triggerComponent={SelectedCurrencyComponent}
+                    itemList={DropdownItemList as ReactNode[]}
+                    onSelect={(index) => setSelectedCurrency(enabledExchangeCurrencyList[index])}
+                />
+                <Tab
+                    tabs={[
+                        { label: '살래요', value: 'buy', color: 'var(--color-main-red)' },
+                        { label: '팔래요', value: 'sell', color: 'var(--color-main-blue)' },
+                    ]}
+                    activeTab={activeTab}
+                    onTabChange={(tab) => { setActiveTab(tab as 'buy' | 'sell') }}
+                />
                 <SuffixInput
                     id="input-amount"
                     label={activeTab === 'buy' ? "매수 금액" : "매도 금액"}
@@ -191,32 +194,31 @@ export default function ExchangePanel() {
                     className='font-semibold'
                     errorMessage={inputAmountError}
                 />
-            </form>
-            <div className='flex w-full justify-center'>
-                <Image src="/assets/nextArrowCircle.svg" alt="next" width={24} height={24} />
-            </div>
-            <SuffixInput
-                id="krw-amount"
-                label="필요 원화"
-                suffix={activeTab === 'buy' ? "원 필요해요" : "원 받을 수 있어요"}
-                value={formatNumber(quote?.krwAmount, 0, 0)}
-                className="!bg-gray-100 !border-gray-300 font-semibold"
-                disabled
-                errorMessage={krwAmountError}
-            />
-            <div className="flex justify-between items-center mt-auto w-full border-t border-gray-300 pt-4 overflow-hidden">
-                <P>적용 환율</P>
-                <P
-                    className="text-md font-semibold text-gray-500"
-                >
-                    {`1 ${selectedCurrency} = ${formatNumber(normalizeCurrent(Boolean(quote?.appliedRate) ? quote?.appliedRate : selectedCurrencyExchangeRate?.rate, selectedCurrency))} ${baseCurrency}`}
-                </P>
-            </div>
-            <form onSubmit={handleOrder}>
+                <div className='flex justify-center w-full'>
+                    <Image src="/assets/nextArrowCircle.svg" alt="next" width={24} height={24} />
+                </div>
+                <SuffixInput
+                    id="krw-amount"
+                    label="필요 원화"
+                    suffix={activeTab === 'buy' ? "원 필요해요" : "원 받을 수 있어요"}
+                    suffixClassName={`${activeTab === 'buy' ? 'text-main-red' : 'text-main-blue'} font-semibold`}
+                    value={formatNumber(quote?.krwAmount, 0, 0)}
+                    className="!bg-gray-100 !border-gray-300 font-semibold"
+                    disabled
+                    errorMessage={krwAmountError}
+                />
+                <div className="flex items-center justify-between w-full mt-auto pt-4 border-t border-gray-300 overflow-hidden">
+                    <P>적용 환율</P>
+                    <P
+                        className="text-md font-semibold text-gray-500"
+                    >
+                        {`1 ${selectedCurrency} = ${formatNumber(normalizeCurrency(Boolean(quote?.appliedRate) ? quote?.appliedRate : selectedCurrencyExchangeRate?.rate, selectedCurrency))} ${baseCurrency}`}
+                    </P>
+                </div>
                 <Button type="submit" className="w-full" disabled={isOrderStart || inputAmount === 0 || Boolean(inputAmountError) || Boolean(krwAmountError)} textClassName="text-md font-semibold text-white">
                     환전하기
                 </Button>
             </form>
-        </Container>
+        </Container >
     )
 }   

@@ -1,8 +1,9 @@
 'use client'
 
 import { useCookies } from "react-cookie";
+
+import useApi, { ApiError, ApiResponse } from "./useApi";
 import { errorToast } from "../lib/toast";
-import useApi from "./useApi";
 
 interface LoginResponse {
     data: {
@@ -10,7 +11,7 @@ interface LoginResponse {
             memberId: string;
             token: string;
         }
-    }
+    },
 }
 
 export default function useAuth() {
@@ -28,7 +29,8 @@ export default function useAuth() {
             setCookie('accessToken', res.data.data.token)
             return res;
         } catch (error) {
-            errorToast(error as string)
+            console.error(error)
+            errorToast('로그인에 실패했습니다. 다시 시도해주세요.')
             throw error;
         }
     }
@@ -42,7 +44,8 @@ export default function useAuth() {
 
             return Boolean(res.status === 200)
         } catch (error) {
-            errorToast(error as string)
+            console.error(error)
+            errorToast('세션 확인에 실패했습니다. 다시 시도해주세요.')
             throw error;
         }
     }
