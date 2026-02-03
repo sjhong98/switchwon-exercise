@@ -10,8 +10,8 @@
 ### 1. Repository Clone
 
 ```bash
-git clone <repository-url>
-cd switchwon-exercise
+git clone https://github.com/sjhong98/switchwon-exercise-hsj.git
+cd switchwon-exercise-hsj
 ```
 
 ### 2. Install Dependencies
