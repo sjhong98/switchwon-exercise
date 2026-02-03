@@ -3,7 +3,7 @@
 import { CookiesProvider } from "react-cookie";
 import { ToastContainer } from "react-toastify";
 
-import QueryProvider from "./providers/queryProvider";
+import QueryProvider from "./providers/QueryProvider";
 
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
