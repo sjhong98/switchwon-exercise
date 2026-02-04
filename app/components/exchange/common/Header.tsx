@@ -15,7 +15,7 @@ export default function ExchangeHeader() {
     const { signOut } = useAuth();
 
     const isExchangePage = pathname === '/exchange';
-    const isHistoryPage = pathname === '/transactions';
+    const isHistoryPage = pathname === '/exchange/history';
 
     const handleSignOut = useCallback(() => {
         signOut()
@@ -33,7 +33,7 @@ export default function ExchangeHeader() {
             <div className='flex items-center gap-8 lg:gap-16'>
                 <nav className='flex items-center gap-6 lg:gap-12 overflow-hidden'>
                     <Link href="/exchange" className={`min-w-0 ${isExchangePage ? 'text-sm font-bold' : 'text-sm text-gray-500'} overflow-hidden text-ellipsis whitespace-nowrap`}>환전 하기</Link>
-                    <Link href="/transactions" className={`min-w-0 ${isHistoryPage ? `text-sm font-bold` : `text-sm text-gray-500`} overflow-hidden text-ellipsis whitespace-nowrap`}>환전 내역</Link>
+                    <Link href="/exchange/history" className={`min-w-0 ${isHistoryPage ? `text-sm font-bold` : `text-sm text-gray-500`} overflow-hidden text-ellipsis whitespace-nowrap`}>환전 내역</Link>
                 </nav>
                 <Button onClick={handleSignOut} size="sm" color="main" textClassName='text-[12px]'>
                     Log Out
