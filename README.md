@@ -150,12 +150,12 @@ app/
     - 인증 성공 시 반환된 accessToken을 쿠키에 저장
     - sameSite, secure 보안 옵션 적용
 
-    1-3) 세션 확인 (checkSession)
+    1-2) 세션 확인 (checkSession)
     - 내 지갑 조회 API를 통해 세션 확인
     - 세션 확인 실패시 로그인 페이지로 이동
     - (exchange) 라우트 layout에서 동작
 
-    1-4) 로그아웃 (signOut)
+    1-3) 로그아웃 (signOut)
     - accessToken을 삭제하고 로그인 페이지로 이동
 
     
