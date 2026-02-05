@@ -38,6 +38,7 @@ http://localhost:3000
 
 로그인, 실시간 환율 조회, 환전, 내역 조회 기능이 구현된 서비스
 
+<br />
 
 ### 기술 스택
 
@@ -45,6 +46,7 @@ http://localhost:3000
 - State/Data Fetching: React Query, react-cookie, Fetch API
 - UI: Tailwind CSS, react-toastify
 
+<br />
 
 ### 폴더 구조
 
@@ -122,6 +124,7 @@ app/
     └── Wallet.ts
 ```
 
+<br />
 
 ### 페이지 구성
 
@@ -138,10 +141,12 @@ app/
 3. /exchange/history
 - 환전내역 조회
 
+<br />
 
 ### 기능 설명
 
 **1. 인증**
+
 **useAuth** 훅에 로직 정리
 
     1-1) 로그인 / 회원가입 (signIn)
@@ -160,6 +165,7 @@ app/
 
     
 **2. 실시간 환율 조회**
+
 **useExchangeRate** 훅에 로직 정리
 
     2-1) 실시간 환율 조회
@@ -167,12 +173,14 @@ app/
     - 캐싱 기간 및 리패칭 인터벌 1분으로 설정하여, 1분 간격으로 갱신
 
 **3. 내 지갑 확인**
+
 **useWallet** 훅에 로직 정리
 
     3-1) 내 지갑 조회
     - Tanstack Query로 내 지갑 정보 패칭 및 관리
 
 **4. 환전**
+
 **useExchange** 훅에 로직 정리
 
     4-1) 주문 (order)
@@ -189,6 +197,7 @@ app/
     4-3) 환전 내역 조회 (getExchangeHistory)
     - Tanstack Query로 환전 내역 패칭 및 관리
 
+<br />
 
 ## 구현 내용
 
